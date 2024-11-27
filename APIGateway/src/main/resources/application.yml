@@ -1,0 +1,56 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: API-GATEWAY
+
+  zipkin:
+    base-url: http://localhost:9411
+  cloud:
+    gateway:
+      routes:
+        - id: QUESTION-SERVICE
+          predicates:
+            - Path= /question/**
+          uri: lb://QUESTION-SERVICE
+          filters:
+            - name: AuthenticationFilter
+
+        - id: QUIZ-SERVICE
+          predicates:
+            - Path= /quiz/**, /test/**
+          uri: lb://QUIZ-SERVICE
+          filters:
+            - name: AuthenticationFilter
+
+        - id: AUTH-SERVICE
+          predicates:
+            - Path= /auth/**
+          uri: lb://AUTH-SERVICE
+
+#1.  try to use the configuration properties concept in feign client
+#2. feign client : create controller in question service and try to call it from quiz service using new
+# feign client interface
+
+# JAVA 8 functional programming
+
+
+# logging settings
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, %X{traceId:-}, %X{spanId:-}]'
+
+  level:
+    root: info
+    com.example: debug
+    org.springframework: warn
+  file:
+    name: logs/api-gateway-service.log
+
+  logback:
+    rollingpolicy:
+      max-history: 25
+      max-file-size: 10MB
+
+

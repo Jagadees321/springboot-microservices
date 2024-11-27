@@ -1,0 +1,4 @@
+http.host: "0.0.0.0"                                  # Specifies the host IP addres, "0.0.0.0" means Logstash will bind to all available IPv4 addresses on the host.
+xpack.monitoring.enabled: true                        # Enables monitoring features provided by X-Pack
+path.config: /usr/share/logstash/config/logstash.conf # Specifies the directory path where Logstash should look for its configuration file
+path.logs: /usr/share/logstash/logs                   # Specifies the directory path where Logstash should store its log files

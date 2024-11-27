@@ -1,0 +1,41 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
+    ports:
+      - "9200:9200" # we can send HTTP requests to Elasticsearch from your host machine or other containers/services
+      - "9300:9300" # we facilitate communication between Elasticsearch nodes if we decide to run a cluster. This allows the nodes to form a cluster and exchange data.
+    networks:
+      - elk-network # network to whom should it connect
+    environment:
+      - discovery.type=single-node # This configuration sets Elasticsearch to run in single-node mode and avoid forming a cluster with other nodes
+      - xpack.security.enabled=false # Disables the X-Pack security features in Elasticsearch, to avoid authentication, authorization, and encryption
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.13
+    ports:
+      - "5000:5000" 
+    volumes: # this is used to move the file from local to docker images path
+    # replace D:/Lecture/MicroServices with your parent path
+      - D:/Lecture/MicroServices/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - D:/Lecture/MicroServices:/usr/share/logstash/config
+      - D:/Lecture/MicroServices/QuizServices/logs:/usr/share/logstash/logs
+      - D:/Lecture/MicroServices/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    command: ["-f", "/usr/share/logstash/config/logstash.conf"] # instructs Logstash to use the specified configuration file.
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.13
+    ports:
+      - "5601:5601"
+    depends_on:
+      - logstash
+    networks:
+      - elk-network
+
+networks:
+  elk-network: # name of the custom network being created.
+    driver: bridge

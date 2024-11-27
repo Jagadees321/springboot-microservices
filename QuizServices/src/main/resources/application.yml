@@ -1,0 +1,79 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: QUIZ-SERVICE
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/rahul
+    username: postgres
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+#Configuration for circuit breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      QuizCircuitBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 10
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state:
+          seconds: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: count_based
+        sliding-window-size: 10
+
+
+  retry:
+    instances:
+      getAllQuizRetry:
+        max-attempts: 3
+        wait-duration:
+          seconds: 5s
+
+  ratelimiter:
+    instances:
+      TestRateLimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeout-duration:
+          seconds: 0s
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# logging settings
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, %X{traceId:-}, %X{spanId:-}]'
+
+  level:
+    root: info
+    com.example: debug
+    org.springframework: warn
+  file:
+    name: logs/quiz-service.log
+
+  logback:
+    rollingpolicy:
+      max-history: 25
+      max-file-size: 10MB
